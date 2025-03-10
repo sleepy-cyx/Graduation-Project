@@ -1,0 +1,3 @@
+mysqldsn: "root:12345678@(127.0.0.1:3306)/entry_task_db?charset=utf8mb4&parseTime=True&loc=Local"
+redispassword: "123456"
+redisaddress: "127.0.0.1:6379"
