@@ -45,7 +45,16 @@ func Login(c *gin.Context) {
 		return
 	}
 	//生成token并返回
-	token := middleware.GenerateToken()
+	token, err := middleware.GenerateToken(userInfo.Username, uint32(userInfo.Id))
+	if err != nil {
+		log.Logger.Errorf("GenerateToken err: %v", err)
+		Response(c, common.ERRCODE_SERVER_ERROR, common.SERVER_ERROR, nil)
+		return
+	}
+	resp := LoginResp{
+		Token: token,
+	}
+	Response(c, http.StatusOK, common.SUCCESS, resp)
 
 }
 
