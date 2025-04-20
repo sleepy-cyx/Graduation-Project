@@ -5,15 +5,10 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 type LoginResp struct {
-	Token   string `json:"token"`
-	Msg     string `json:"msg"`
-	ErrCode int    `json:"errcode"`
+	UserId uint   `json:"user_id"`
+	Msg    string `json:"msg"`
 }
 
-type LogoutResp struct {
-	Msg     string `json:"msg"`
-	ErrCode int    `json:"errcode"`
-}
 type Schedule struct {
 	Id        uint   `gorm:"primary_key;auto_increment" json:"id"`
 	UserID    uint   `gorm:"not null" json:"user_id"`

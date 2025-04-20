@@ -10,6 +10,7 @@ type Schedule struct {
 	Id        uint   `gorm:"primary_key;auto_increment" json:"id"`
 	UserID    uint   `gorm:"not null" json:"user_id"`
 	Title     string `gorm:"not null" json:"title"`
+	Location  string `gorm:"not null" json:"location"`
 	Comment   string `gorm:"not null" json:"comment"`
 	StartTime string `gorm:"not null" json:"start_time"`
 	EndTime   string `gorm:"not null" json:"end_time"`

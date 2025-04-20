@@ -15,7 +15,7 @@ type UserDao struct {
 }
 
 // GetUserInfoByUsername 根据username查表
-func (usr *UserDao) GetUserInfoByUsername(username string) (*model.User, bool, error) {
+func (usr *UserDao) GetUserInfoByUsername(userId uint) (*model.User, bool, error) {
 	user := model.User{}
 	result := usr.DB.Where("user_name = ?", username).Limit(1).Find(&user)
 	if result.Error != nil {

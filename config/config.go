@@ -7,9 +7,7 @@ import (
 )
 
 type Config struct {
-	MysqlDsn      string // MySQL数据源名称，用于数据库连接
-	RedisPassword string // Redis密码，用于认证连接
-	RedisAddress  string // Redis服务器地址，用于建立连接
+	MysqlDsn string // MySQL数据源名称，用于数据库连接
 }
 
 var Conf Config
