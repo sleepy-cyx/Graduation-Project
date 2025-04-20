@@ -2,20 +2,34 @@ package repo
 
 import (
 	"Graduation-Project/model"
-	"crypto/sha256"
-	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
-	"time"
 )
 
 type UserDao struct {
 	DB *gorm.DB
 }
 
+// 修改返回类型为切片（非指针）
+func (usr *UserDao) GetScheduleInfoByUserId(userId uint) ([]model.Schedule, bool, error) {
+	var schedules []model.Schedule
+	result := usr.DB.Where("user_id = ?", userId).Find(&schedules)
+
+	if result.Error != nil {
+		return nil, false, result.Error
+	}
+
+	if len(schedules) == 0 {
+		return schedules, false, nil // 直接返回空切片
+	}
+
+	return schedules, true, nil
+}
+
 // GetUserInfoByUsername 根据username查表
-func (usr *UserDao) GetUserInfoByUsername(userId uint) (*model.User, bool, error) {
+func (usr *UserDao) GetUserInfoByUsername(username string) (*model.User, bool, error) {
 	user := model.User{}
 	result := usr.DB.Where("user_name = ?", username).Limit(1).Find(&user)
 	if result.Error != nil {
@@ -29,48 +43,109 @@ func (usr *UserDao) GetUserInfoByUsername(userId uint) (*model.User, bool, error
 
 }
 
-// AlterUserInfo 修改用户信息
-func (usr *UserDao) AlterUserInfo(username string, nickname string, pictureUrl string, loginIP string, loginTime time.Time) (bool, error) {
-	tableName := getTableName(username, 10)
-	updateTime := time.Now().Format(time.RFC3339)
-	updateTimeParsed, err := time.Parse(time.RFC3339, updateTime)
-	if err != nil {
-		return false, err
+// CreateUser 创建新用户（注册逻辑）
+func (usr *UserDao) CreateUser(user *model.User) (*model.User, bool, error) {
+	// 执行数据库插入操作
+	result := usr.DB.Create(user)
+
+	if result.Error != nil {
+		// 处理唯一约束冲突（用户名重复）
+		var mysqlErr *mysql.MySQLError
+		if errors.As(result.Error, &mysqlErr) && mysqlErr.Number == 1062 {
+			return nil, false, fmt.Errorf("用户名 %s 已存在", user.Username)
+		}
+
+		// 其他数据库错误
+		return nil, false, result.Error
 	}
-	// 创建一个map来存储要更新的字段
-	updates := make(map[string]interface{})
-	if nickname != "" {
-		updates["nickname"] = nickname
+
+	// 插入成功时返回用户信息（包含自动生成的ID）
+	return user, true, nil
+}
+
+// CreateSchedule 创建新日程
+func (dao *UserDao) CreateSchedule(schedule *model.Schedule) (*model.Schedule, bool, error) {
+	// 检查外键约束（确保UserID存在）
+	var user model.User
+	if err := dao.DB.First(&user, schedule.UserID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, fmt.Errorf("用户ID %d 不存在", schedule.UserID)
+		}
+		return nil, false, err
 	}
-	if pictureUrl != "" {
-		updates["picture_url"] = pictureUrl
+
+	// 执行插入操作
+	result := dao.DB.Create(schedule)
+	if result.Error != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(result.Error, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1062: // 唯一约束冲突（假设有其他唯一字段）
+				return nil, false, fmt.Errorf("日程冲突: %v", mysqlErr.Message)
+			case 1452: // 外键约束失败（理论上已提前检查，此处为兜底）
+				return nil, false, fmt.Errorf("关联用户不存在")
+			}
+		}
+		return nil, false, result.Error
 	}
-	if loginIP != "" {
-		updates["latest_ip"] = loginIP
+
+	return schedule, true, nil
+}
+
+// UpdateSchedule 更新日程（根据ID和UserID验证权限）
+func (dao *UserDao) UpdateSchedule(schedule *model.Schedule) (*model.Schedule, bool, error) {
+	// 查询现有数据（防止越权修改）
+	existing := model.Schedule{}
+	result := dao.DB.Where("id = ? AND user_id = ?", schedule.Id, schedule.UserID).First(&existing)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, false, fmt.Errorf("日程不存在或无权修改")
+		}
+		return nil, false, result.Error
 	}
-	// LoginTime总是需要更新
-	updates["latest_login"] = loginTime
-	updates["update_time"] = updateTimeParsed
-	if nickname == "" {
-		return true, nil
+
+	// 执行更新（避免更新UserID）
+	updateData := map[string]interface{}{
+		"title":      schedule.Title,
+		"location":   schedule.Location,
+		"comment":    schedule.Comment,
+		"start_time": schedule.StartTime,
+		"end_time":   schedule.EndTime,
 	}
-	// 使用Where找到特定的用户并更新字段
-	result := usr.DB.Table(tableName).Where("user_name = ?", username).Limit(1).Updates(updates)
-	// 检查是否有错误发生
+
+	result = dao.DB.Model(&existing).Updates(updateData)
+	if result.Error != nil {
+		return nil, false, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, false, fmt.Errorf("日程更新失败")
+	}
+
+	// 返回更新后的数据（重新查询确保数据最新）
+	dao.DB.First(&existing, schedule.Id)
+	return &existing, true, nil
+}
+
+// DeleteSchedule 删除日程（根据ID和UserID验证权限）
+func (dao *UserDao) DeleteSchedule(scheduleID, userID uint) (bool, error) {
+	// 查询是否存在且属于该用户
+	existing := model.Schedule{}
+	result := dao.DB.Where("id = ? AND user_id = ?", scheduleID, userID).First(&existing)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return false, fmt.Errorf("日程不存在或无权删除")
+		}
+		return false, result.Error
+	}
+
+	// 执行删除
+	result = dao.DB.Delete(&existing)
 	if result.Error != nil {
 		return false, result.Error
 	}
-	// 检查是否找到了记录
 	if result.RowsAffected == 0 {
-		return false, nil
+		return false, fmt.Errorf("日程删除失败")
 	}
 
 	return true, nil
-}
-func getTableName(userName string, numTables int) string {
-	hash := sha256.Sum256([]byte(userName))
-	hashNum := binary.BigEndian.Uint64(hash[:8])
-	tableIdx := hashNum % uint64(numTables)
-	tableName := fmt.Sprintf("user_tab_0000000%d", tableIdx)
-	return tableName
 }

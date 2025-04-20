@@ -25,8 +25,6 @@ const (
 	ERRCODE_SUCCESS                        int32 = 0000
 	ERRCODE_RPC_CALL_ERROR                 int32 = 3000
 	ERRCODE_PARAMETER_INVALID              int32 = 5000
-	ERRCODE_SAVE_FILE_ERROR                int32 = 4001
-	ERRCODE_RECEIVE_FILE_ERROR             int32 = 4002
 	ERRCODE_UNAUTHORIZED                   int32 = 4003
 	ERRCODE_SERVER_ERROR                   int32 = 9999
 )

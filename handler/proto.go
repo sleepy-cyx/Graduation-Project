@@ -1,5 +1,7 @@
 package handler
 
+import "Graduation-Project/model"
+
 type LoginReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -9,26 +11,32 @@ type LoginResp struct {
 	Msg    string `json:"msg"`
 }
 
-type Schedule struct {
-	Id        uint   `gorm:"primary_key;auto_increment" json:"id"`
-	UserID    uint   `gorm:"not null" json:"user_id"`
-	Title     string `gorm:"not null" json:"title"`
-	Comment   string `gorm:"not null" json:"comment"`
-	StartTime string `gorm:"not null" json:"start_time"`
-	EndTime   string `gorm:"not null" json:"end_time"`
+// 注册请求结构体
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type GetScheduleInfoResp struct {
-	Schedules []Schedule `json:"schedules"`
-	Msg       string     `json:"msg"`
-	ErrCode   int        `json:"errcode"`
+	Schedules []model.Schedule `json:"schedules"`
+	Msg       string           `json:"msg"`
+	ErrCode   int              `json:"errcode"`
 }
 
 type UpdateScheduleInfoReq struct {
-	Schedules []Schedule `json:"schedules"`
+	Schedules []model.Schedule `json:"schedules"`
 }
 
 type UpdateScheduleInfoResp struct {
 	Msg     string `json:"msg"`
 	ErrCode int    `json:"errcode"`
+}
+type UpdateScheduleReq struct {
+	ScheduleID uint   `json:"schedule_id" binding:"required"`
+	UserID     uint   `json:"user_id" binding:"required"` // 可选，根据实际需求
+	Title      string `json:"title"`
+	Location   string `json:"location"`
+	Comment    string `json:"comment"`
+	StartTime  string `json:"start_time"`
+	EndTime    string `json:"end_time"`
 }
