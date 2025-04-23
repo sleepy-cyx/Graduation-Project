@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Graduation-Project/config"
 	"Graduation-Project/log"
 	"Graduation-Project/route"
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,7 @@ import (
 
 func main() {
 	router := gin.New()
+	config.InitConfig()
 	router.Use(gin.Recovery())
 	//pprof.Register(router)
 	route.InitRouter(router)

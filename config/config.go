@@ -12,15 +12,16 @@ type Config struct {
 
 var Conf Config
 
-func (conf *Config) InitConfig() {
+func InitConfig() {
 	yamlFile, err := os.ReadFile("./config/config.yaml")
 	if err != nil {
 		log.Logger.Errorf("yamlFile.Get err%v ", err)
 	}
+	conf := Config{}
 	err = yaml.Unmarshal(yamlFile, &conf)
 	if err != nil {
 		log.Logger.Errorf("Unmarshal: %v", err)
 	}
-	Conf = *conf
+	Conf = conf
 	return
 }
