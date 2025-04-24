@@ -2,10 +2,12 @@ package route
 
 import (
 	"Graduation-Project/handler"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func InitRouter(r *gin.Engine) {
+	r.Use(cors.Default())
 	r.POST("/login", handler.Login)
 	// 获取日程列表
 	r.GET("/get_schedules", handler.GetScheduleInfo)
@@ -16,4 +18,5 @@ func InitRouter(r *gin.Engine) {
 	r.POST("/delete_schedule", handler.DeleteSchedule)
 	// 原有其他接口
 	r.POST("/translate_schedule", handler.TranslateSchedule)
+	r.POST("/create_schedule", handler.CreateSchedule)
 }

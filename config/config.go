@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	MysqlDsn string // MySQL数据源名称，用于数据库连接
+	MysqlDsn       string // MySQL数据源名称，用于数据库连接
+	DeepSeekAPIKey string
 }
 
 var Conf Config
@@ -24,4 +25,8 @@ func InitConfig() {
 	}
 	Conf = conf
 	return
+}
+func GetConfig() Config {
+	InitConfig()
+	return Conf
 }

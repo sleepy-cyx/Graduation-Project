@@ -15,7 +15,7 @@ type UserDao struct {
 // 修改返回类型为切片（非指针）
 func (usr *UserDao) GetScheduleInfoByUserId(userId uint) ([]model.Schedule, bool, error) {
 	var schedules []model.Schedule
-	result := usr.DB.Where("user_id = ?", userId).Find(&schedules)
+	result := usr.DB.Where("user_id = ?", userId).Order("start_time ASC").Find(&schedules)
 
 	if result.Error != nil {
 		return nil, false, result.Error
@@ -31,7 +31,7 @@ func (usr *UserDao) GetScheduleInfoByUserId(userId uint) ([]model.Schedule, bool
 // GetUserInfoByUsername 根据username查表
 func (usr *UserDao) GetUserInfoByUsername(username string) (*model.User, bool, error) {
 	user := model.User{}
-	result := usr.DB.Where("user_name = ?", username).Limit(1).Find(&user)
+	result := usr.DB.Where("username = ?", username).Limit(1).Find(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			// 没有找到记录

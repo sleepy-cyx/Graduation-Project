@@ -1,13 +1,16 @@
 package service
 
 import (
+	"Graduation-Project/config"
 	"Graduation-Project/log"
 	"Graduation-Project/model"
 	"Graduation-Project/repo"
 	"Graduation-Project/utils"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
+	"time"
 )
 
 // 这里提供rpc服务端业务逻辑实现的方法 1、根据username查详情(登录验证+携带token获取信息 2、更改userinfo
@@ -16,6 +19,33 @@ type UserServiceHandler struct {
 	MySQLHandler *repo.UserDao
 }
 
+type ScheduleService interface {
+	TextToSchedule(text string) (utils.ScheduleJson, error)
+}
+
+type DeepSeekScheduleService struct {
+	apiClient   *http.Client
+	apiEndpoint string
+	apiKey      string
+}
+
+func NewScheduleService() (ScheduleService, error) {
+	return &DeepSeekScheduleService{
+		apiClient: &http.Client{
+			Timeout: 10 * time.Second,
+		},
+		apiEndpoint: "https://api.deepseek.com/v1/schedule/parse",
+		apiKey:      config.GetConfig().DeepSeekAPIKey,
+	}, nil
+}
+
+func (s *DeepSeekScheduleService) TextToSchedule(text string) (utils.ScheduleJson, error) {
+	schedule, err := utils.TextToJson(text)
+	if err != nil {
+		return schedule, err
+	}
+	return schedule, nil
+}
 func NewUserServiceHandler() (handler *UserServiceHandler, err error) {
 	handler = &UserServiceHandler{}
 	dbHandler, err := repo.InitDB()
@@ -46,9 +76,6 @@ func (handler *UserServiceHandler) Login(username, password string) (uint, error
 	// 参数基础校验
 	if strings.TrimSpace(username) == "" || strings.TrimSpace(password) == "" {
 		return 0, errors.New("用户名和密码不能为空")
-	}
-	if len(password) < 6 {
-		return 0, errors.New("密码长度至少6位")
 	}
 
 	// 查询用户信息
@@ -85,7 +112,7 @@ func (handler *UserServiceHandler) GetSchedulesByUserID(userId uint) ([]model.Sc
 	}
 	//走到这就有问题了
 
-	return schedule, false, errors.New("user Invalid")
+	return schedule, false, nil
 }
 func (handler *UserServiceHandler) CreateUser(username, password string) error {
 	// 参数基础校验

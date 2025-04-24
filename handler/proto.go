@@ -32,11 +32,26 @@ type UpdateScheduleInfoResp struct {
 	ErrCode int    `json:"errcode"`
 }
 type UpdateScheduleReq struct {
-	ScheduleID uint   `json:"schedule_id" binding:"required"`
-	UserID     uint   `json:"user_id" binding:"required"` // 可选，根据实际需求
-	Title      string `json:"title"`
-	Location   string `json:"location"`
-	Comment    string `json:"comment"`
-	StartTime  string `json:"start_time"`
-	EndTime    string `json:"end_time"`
+	UserID    uint   `json:"user_id" binding:"required"` // 可选，根据实际需求
+	Title     string `json:"title"`
+	Location  string `json:"location"`
+	Comment   string `json:"comment"`
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
+}
+type CreateScheduleRequest struct {
+	UserID    uint   `json:"user_id" binding:"required,min=1"`
+	Title     string `json:"title" binding:"required"`
+	Location  string `json:"location" binding:"required"`
+	Comment   string `json:"comment"`
+	StartTime string `json:"start_time" binding:"required"`
+	EndTime   string `json:"end_time" binding:"required"`
+}
+type DeleteScheduleRequest struct {
+	UserID     string `json:"user_id" binding:"required"` // 注意：从请求体获取用户ID有安全风险
+	ScheduleID int    `json:"schedule_id" binding:"required"`
+}
+
+type TextToScheduleRequest struct {
+	Text string `json:"text" binding:"required"`
 }
