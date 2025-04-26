@@ -8,6 +8,7 @@ import (
 	"Graduation-Project/utils"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -207,4 +208,21 @@ func (handler *UserServiceHandler) DeleteSchedule(requesterUserID uint, schedule
 		return errors.New("日程删除失败")
 	}
 	return nil
+}
+func (s *DeepSeekScheduleService) FileToSchedule(file io.Reader, filename string) (utils.ScheduleJson, error) {
+	// 根据文件类型选择解析器
+	var text string
+	switch {
+	case strings.HasSuffix(filename, ".pdf"):
+		text = parsePDF(file)
+	case strings.HasSuffix(filename, ".docx"):
+		text = parseDocx(file)
+	case strings.HasSuffix(filename, ".xlsx"):
+		text = parseExcel(file)
+	default:
+		return utils.ScheduleJson{}, errors.New("unsupported file type")
+	}
+
+	// 复用文本解析逻辑
+	return utils.TextToJson(text)
 }

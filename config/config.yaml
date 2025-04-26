@@ -1,1 +1,2 @@
 mysqldsn: "root:12345678@(127.0.0.1:3306)/graduation_db?charset=utf8mb4&parseTime=True&loc=Local"
+deepSeekAPIkey: sk-a7fc2b76e58e4bcca774f30181e589d1

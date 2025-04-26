@@ -311,3 +311,36 @@ func CreateSchedule(c *gin.Context) {
 
 	Response(c, common.ERRCODE_SUCCESS, common.SUCCESS, nil)
 }
+func ParseFile(c *gin.Context) {
+	// 获取上传文件
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		Response(c, common.ERRCODE_PARAMETER_INVALID, "文件上传失败", nil)
+		return
+	}
+	defer file.Close()
+
+	// 验证文件类型
+	allowedTypes := map[string]bool{
+		"application/pdf": true,
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":       true,
+	}
+	if !allowedTypes[header.Header.Get("Content-Type")] {
+		Response(c, common.ERRCODE_PARAMETER_INVALID, "不支持的文件类型", nil)
+		return
+	}
+
+	// 调用服务层解析
+	serviceHandler, err := service.NewScheduleService()
+	if err != nil {
+		// ...错误处理...
+	}
+
+	schedule, err := serviceHandler.FileToSchedule(file, header.Filename)
+	if err != nil {
+		// ...错误处理...
+	}
+
+	Response(c, common.ERRCODE_SUCCESS, common.SUCCESS, schedule)
+}

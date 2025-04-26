@@ -19,4 +19,5 @@ func InitRouter(r *gin.Engine) {
 	// 原有其他接口
 	r.POST("/translate_schedule", handler.TranslateSchedule)
 	r.POST("/create_schedule", handler.CreateSchedule)
+	r.POST("/parse_file", handler.ParseFile)
 }
