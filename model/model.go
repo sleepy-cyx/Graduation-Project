@@ -6,6 +6,7 @@ type User struct {
 	Password   string `gorm:"not null" json:"password"`
 	Salt       string `gorm:"not null" json:"salt"`
 	Email      string `gorm:"unique" json:"email"`
+	PictureUrl string `gorm:"not null" json:"picture_url"`
 	NeedNotice bool   `gorm:"not null" json:"need_notice"`
 }
 type Schedule struct {

@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"Graduation-Project/log"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type ApiResponse struct {
@@ -28,6 +29,7 @@ func TextToJson(text string) (ScheduleJson, error) {
 	url := "https://api.deepseek.com/chat/completions"
 	method := "POST"
 	schedule := ScheduleJson{}
+	todayStr := time.Now().Format("2006-01-02")
 	// 修复后的请求体结构
 	requestBody := map[string]interface{}{
 		"messages": []map[string]string{
@@ -36,7 +38,7 @@ func TextToJson(text string) (ScheduleJson, error) {
 				"content": "将文本中的日程信息提取并且转化成格式化的json，日程结构体为type Schedule struct { " +
 					"title string; location string; comment string; start_time string; end_time string " +
 					"} 返回的json的key值跟结构体的变量需要一一对应，如果提取不到对应信息，对应字段可以填空字符串，开始时间和结束时间形如yyyy-mm-ddT14:00:00+08:00格式。" +
-					"文本内容是：" + text,
+					"文本内容是：" + text + "今天的日期为:" + todayStr,
 			},
 		},
 		"model":           "deepseek-chat",
@@ -49,7 +51,7 @@ func TextToJson(text string) (ScheduleJson, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		fmt.Println(err)
+		log.Logger.Error(err)
 		return schedule, err
 	}
 
@@ -58,32 +60,32 @@ func TextToJson(text string) (ScheduleJson, error) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		log.Logger.Error(err)
 		return schedule, err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Logger.Error(err)
 		return schedule, err
 	}
 	var apiResponse ApiResponse
 	if err := json.Unmarshal(body, &apiResponse); err != nil {
-		fmt.Println("解析API响应失败:", err)
+		log.Logger.Errorf("解析API响应失败:%v", err)
 		return schedule, err
 	}
 
 	// 检查是否存在有效响应
 	if len(apiResponse.Choices) == 0 || apiResponse.Choices[0].Message.Content == "" {
-		fmt.Println("API返回空响应")
+		log.Logger.Error("API返回空响应")
 		return schedule, err
 	}
 
 	// 提取并解析内层JSON
 	content := apiResponse.Choices[0].Message.Content
 	if err := json.Unmarshal([]byte(content), &schedule); err != nil {
-		fmt.Println("解析日程信息失败:", err)
+		log.Logger.Errorf("解析日程信息失败:%v", err)
 		return schedule, err
 	}
 	return schedule, nil
