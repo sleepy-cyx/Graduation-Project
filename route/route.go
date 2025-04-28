@@ -11,6 +11,8 @@ func InitRouter(r *gin.Engine) {
 	r.POST("/login", handler.Login)
 	// 获取日程列表
 	r.GET("/get_schedules", handler.GetScheduleInfo)
+	r.GET("/get_user_info", handler.GetUserInfo)
+	r.POST("update_user_info", handler.UpdateUserInfo)
 	r.POST("/register", handler.Register)
 	// 更新日程(使用POST保持现有风格)
 	r.POST("/update_schedule", handler.UpdateScheduleInfo)

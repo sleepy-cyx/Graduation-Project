@@ -28,6 +28,7 @@ const (
 	ERRCODE_UNAUTHORIZED                   int32 = 4003
 	ERRCODE_SERVER_ERROR                   int32 = 9999
 )
+const DEFAULT_USER_PICTURE_URL = ""
 
 var TypeMap = map[uint]string{
 	0: "会议",

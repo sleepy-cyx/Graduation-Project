@@ -115,7 +115,7 @@ func (handler *UserServiceHandler) GetSchedulesByUserID(userId uint) ([]model.Sc
 
 	return schedule, false, nil
 }
-func (handler *UserServiceHandler) CreateUser(username, password, email string) error {
+func (handler *UserServiceHandler) CreateUser(username, password, email, url string) error {
 	// 参数基础校验
 	if strings.TrimSpace(username) == "" || strings.TrimSpace(password) == "" || strings.TrimSpace(email) == "" {
 		return errors.New("用户名和密码不能为空")
@@ -130,6 +130,7 @@ func (handler *UserServiceHandler) CreateUser(username, password, email string) 
 		Password:   hashedPassword,
 		Salt:       username, // 根据Md5BySalt逻辑，盐值=用户名
 		Email:      email,
+		PictureUrl: url,
 		NeedNotice: true,
 	}
 

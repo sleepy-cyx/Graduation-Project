@@ -77,7 +77,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	err = serviceHandler.CreateUser(req.Username, req.Password, req.Email)
+	err = serviceHandler.CreateUser(req.Username, req.Password, req.Email, common.DEFAULT_USER_PICTURE_URL)
 	if err != nil {
 		log.Logger.Errorf("用户注册失败: %v", err)
 		// 处理特定错误类型
@@ -90,6 +90,12 @@ func Register(c *gin.Context) {
 	}
 	// 5. 返回响应
 	Response(c, http.StatusCreated, common.SUCCESS, nil)
+}
+func GetUserInfo(c *gin.Context) {
+
+}
+func UpdateUserInfo(c *gin.Context) {
+
 }
 func GetScheduleInfo(c *gin.Context) {
 	// 1. 参数获取与验证
