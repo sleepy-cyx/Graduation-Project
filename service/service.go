@@ -115,9 +115,9 @@ func (handler *UserServiceHandler) GetSchedulesByUserID(userId uint) ([]model.Sc
 
 	return schedule, false, nil
 }
-func (handler *UserServiceHandler) CreateUser(username, password string) error {
+func (handler *UserServiceHandler) CreateUser(username, password, email string) error {
 	// 参数基础校验
-	if strings.TrimSpace(username) == "" || strings.TrimSpace(password) == "" {
+	if strings.TrimSpace(username) == "" || strings.TrimSpace(password) == "" || strings.TrimSpace(email) == "" {
 		return errors.New("用户名和密码不能为空")
 	}
 
@@ -126,9 +126,11 @@ func (handler *UserServiceHandler) CreateUser(username, password string) error {
 
 	// 构造用户对象
 	newUser := &model.User{
-		Username: username,
-		Password: hashedPassword,
-		Salt:     username, // 根据Md5BySalt逻辑，盐值=用户名
+		Username:   username,
+		Password:   hashedPassword,
+		Salt:       username, // 根据Md5BySalt逻辑，盐值=用户名
+		Email:      email,
+		NeedNotice: true,
 	}
 
 	// 调用DAO层插入数据库

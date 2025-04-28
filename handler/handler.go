@@ -5,6 +5,7 @@ import (
 	"Graduation-Project/log"
 	"Graduation-Project/model"
 	"Graduation-Project/service"
+	"Graduation-Project/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -62,7 +63,12 @@ func Register(c *gin.Context) {
 		Response(c, common.ERRCODE_PARAMETER_INVALID, "用户名和密码不能为空", nil)
 		return
 	}
-
+	validEmail := utils.CheckEmail(req.Email)
+	if !validEmail {
+		log.Logger.Errorf("email invalid")
+		Response(c, common.ERRCODE_PARAMETER_INVALID, "email invalid", nil)
+		return
+	}
 	// 2. 创建服务处理器
 	serviceHandler, err := service.NewUserServiceHandler()
 	if err != nil {
@@ -71,7 +77,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	err = serviceHandler.CreateUser(req.Username, req.Password)
+	err = serviceHandler.CreateUser(req.Username, req.Password, req.Email)
 	if err != nil {
 		log.Logger.Errorf("用户注册失败: %v", err)
 		// 处理特定错误类型

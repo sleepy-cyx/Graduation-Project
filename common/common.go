@@ -28,3 +28,14 @@ const (
 	ERRCODE_UNAUTHORIZED                   int32 = 4003
 	ERRCODE_SERVER_ERROR                   int32 = 9999
 )
+
+var TypeMap = map[uint]string{
+	0: "会议",
+	1: "娱乐",
+	2: "工作",
+	3: "学习",
+	4: "运动",
+	5: "医疗",
+	6: "家庭",
+	7: "旅行",
+}
